@@ -3,6 +3,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 using Humanizer;
+using JetBrains.Annotations;
 using Marco.AutocompleteProviders;
 using Marco.Data;
 using Marco.Interactivity;
@@ -26,6 +27,7 @@ internal sealed class EditMacroCommand : ApplicationCommandModule
 
     [SlashCommand("editmacro", "Edits an existing macro.", false)]
     [SlashRequireGuild]
+    [UsedImplicitly]
     public async Task EditMacroAsync(
         InteractionContext context,
         [Option("name", "The name of the macro."), Autocomplete(typeof(MacroAutocompleteProvider))] string name

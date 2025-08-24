@@ -1,6 +1,7 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
+using JetBrains.Annotations;
 using Marco.AutocompleteProviders;
 using Marco.Data;
 using Marco.Services;
@@ -25,6 +26,7 @@ internal sealed class MacroCommand : ApplicationCommandModule
 
     [SlashCommand("anonmacro", "Executes an macro anonymously, hiding the invocation.", false)]
     [SlashRequireGuild]
+    [UsedImplicitly]
     public async Task AnonymousMacroAsync(InteractionContext context,
         [Option("macro", "The name of the macro.", true)] [Autocomplete(typeof(MacroAutocompleteProvider))] string macroName)
     {
@@ -50,6 +52,7 @@ internal sealed class MacroCommand : ApplicationCommandModule
 
     [SlashCommand("macro", "Executes a macro.")]
     [SlashRequireGuild]
+    [UsedImplicitly]
     public async Task MacroAsync(InteractionContext context,
         [Option("macro", "The name of the macro.", true)] [Autocomplete(typeof(MacroAutocompleteProvider))] string macroName)
     {

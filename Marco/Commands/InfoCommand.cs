@@ -4,6 +4,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 using Humanizer;
+using JetBrains.Annotations;
 using Marco.Services;
 using X10D.DSharpPlus;
 
@@ -27,6 +28,7 @@ internal sealed class InfoCommand : ApplicationCommandModule
 
     [SlashCommand("info", "Displays information about the bot.")]
     [SlashRequireGuild]
+    [UsedImplicitly]
     public async Task InfoAsync(InteractionContext context)
     {
         DiscordClient client = context.Client;

@@ -4,6 +4,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 using Humanizer;
+using JetBrains.Annotations;
 using Marco.Data;
 using Marco.Interactivity;
 using Marco.Services;
@@ -26,6 +27,7 @@ internal sealed class AddMacroCommand : ApplicationCommandModule
 
     [SlashCommand("addmacro", "Adds a new macro.", false)]
     [SlashRequireGuild]
+    [UsedImplicitly]
     public async Task AddMacro(
         InteractionContext context,
         [Option("name", "The name of the macro.")] string name

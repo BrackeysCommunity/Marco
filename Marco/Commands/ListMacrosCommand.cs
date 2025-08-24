@@ -3,6 +3,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 using Humanizer;
+using JetBrains.Annotations;
 using Marco.Data;
 using Marco.Services;
 
@@ -23,6 +24,7 @@ internal sealed class ListMacrosCommand : ApplicationCommandModule
 
     [SlashCommand("listmacros", "List all available macros.")]
     [SlashRequireGuild]
+    [UsedImplicitly]
     public async Task ListMacrosAsync(InteractionContext context)
     {
         IReadOnlyCollection<Macro> macros = _macroService.GetMacros(context.Guild).Distinct().ToArray();

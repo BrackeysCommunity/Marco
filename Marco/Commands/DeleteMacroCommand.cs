@@ -1,6 +1,7 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
+using JetBrains.Annotations;
 using Marco.AutocompleteProviders;
 using Marco.Services;
 
@@ -21,6 +22,7 @@ internal sealed class DeleteMacroCommand : ApplicationCommandModule
 
     [SlashCommand("deletemacro", "Deletes an existing macro.", false)]
     [SlashRequireGuild]
+    [UsedImplicitly]
     public async Task DeleteMacroAsync(
         InteractionContext context,
         [Option("name", "The name of the macro."), Autocomplete(typeof(MacroAutocompleteProvider))] string name
