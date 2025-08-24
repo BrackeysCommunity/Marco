@@ -6,9 +6,9 @@ using DSharpPlus.SlashCommands.Attributes;
 using Humanizer;
 using JetBrains.Annotations;
 using Marco.Data;
+using Marco.Extensions;
 using Marco.Interactivity;
 using Marco.Services;
-using X10D.DSharpPlus;
 
 namespace Marco.Commands;
 

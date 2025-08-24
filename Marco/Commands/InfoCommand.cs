@@ -5,8 +5,8 @@ using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 using Humanizer;
 using JetBrains.Annotations;
+using Marco.Extensions;
 using Marco.Services;
-using X10D.DSharpPlus;
 
 namespace Marco.Commands;
 
