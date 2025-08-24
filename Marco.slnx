@@ -1,0 +1,9 @@
+﻿<Solution>
+    <Folder Name="/Solution Items/">
+        <File Path="CONTRIBUTING.md"/>
+        <File Path="LICENSE.md"/>
+        <File Path="README.md"/>
+        <File Path="USAGE.md"/>
+    </Folder>
+    <Project Path="Marco\Marco.csproj" Type="Classic C#"/>
+</Solution>
