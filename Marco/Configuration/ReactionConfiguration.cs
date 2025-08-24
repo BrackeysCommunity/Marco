@@ -1,4 +1,4 @@
-﻿namespace Marco.Configuration;
+namespace Marco.Configuration;
 
 /// <summary>
 ///     Represents a reaction configuration.

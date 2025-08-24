@@ -1,4 +1,4 @@
-﻿using Marco.Data.ValueConverters;
+using Marco.Data.ValueConverters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

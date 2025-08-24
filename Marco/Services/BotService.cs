@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;

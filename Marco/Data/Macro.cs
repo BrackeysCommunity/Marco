@@ -1,4 +1,4 @@
-﻿namespace Marco.Data;
+namespace Marco.Data;
 
 internal sealed class Macro : IEquatable<Macro>
 {

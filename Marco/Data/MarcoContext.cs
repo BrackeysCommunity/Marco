@@ -1,4 +1,4 @@
-﻿using Marco.Data.EntityConfigurations;
+using Marco.Data.EntityConfigurations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Marco.Data;

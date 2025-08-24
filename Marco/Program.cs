@@ -1,4 +1,4 @@
-﻿using DSharpPlus;
+using DSharpPlus;
 using Marco.Data;
 using Marco.Services;
 using Microsoft.Extensions.Configuration;
