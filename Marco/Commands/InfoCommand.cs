@@ -42,6 +42,7 @@ internal sealed class InfoCommand : ApplicationCommandModule
         embed.WithTitle($"Marco v{botVersion}");
         embed.AddField("Ping", client.Ping, true);
         embed.AddField("Uptime", (DateTimeOffset.UtcNow - _botService.StartedAt).Humanize(), true);
+        embed.AddField("Source", "[View on GitHub](https://github.com/BrackeysCommunity/Marco)", true);
 
         var builder = new StringBuilder();
         builder.AppendLine($"Marco: {botVersion}");
