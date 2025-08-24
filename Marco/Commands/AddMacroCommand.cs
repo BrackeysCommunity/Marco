@@ -42,7 +42,7 @@ internal sealed class AddMacroCommand : ApplicationCommandModule
             embed.WithColor(DiscordColor.Red);
             embed.WithTitle("Cannot add macro");
             embed.WithDescription("No name was specified.");
-            await context.CreateResponseAsync(embed, true).ConfigureAwait(false);
+            await context.CreateResponseAsync(embed, true);
             return;
         }
 
@@ -53,7 +53,7 @@ internal sealed class AddMacroCommand : ApplicationCommandModule
             embed.WithColor(DiscordColor.Red);
             embed.WithTitle("Cannot add macro");
             embed.WithDescription($"A macro with the name or alias `{name}` already exists.");
-            await context.CreateResponseAsync(embed, true).ConfigureAwait(false);
+            await context.CreateResponseAsync(embed, true);
             return;
         }
 
@@ -63,7 +63,7 @@ internal sealed class AddMacroCommand : ApplicationCommandModule
             modal.AddInput("Aliases (space-separated)", placeholder: "e.g. null nullreference nullref", isRequired: false);
         DiscordModalTextInput responseInput = modal.AddInput("Response", inputStyle: TextInputStyle.Paragraph);
         DiscordModalResponse response =
-            await modal.Build().RespondToAsync(context.Interaction, TimeSpan.FromMinutes(5)).ConfigureAwait(false);
+            await modal.Build().RespondToAsync(context.Interaction, TimeSpan.FromMinutes(5));
 
         if (response != DiscordModalResponse.Success)
             return;
@@ -85,7 +85,7 @@ internal sealed class AddMacroCommand : ApplicationCommandModule
         }
 
         Macro macro = await _macroService
-            .CreateMacroAsync(guild, null, name, responseInput.Value!, aliases.ToArray()).ConfigureAwait(false);
+            .CreateMacroAsync(guild, null, name, responseInput.Value!, aliases.ToArray());
         embed.WithColor(DiscordColor.Green);
         embed.WithTitle("Macro added");
         embed.WithDescription($"The macro `{macro.Name}` has been added.");
@@ -103,6 +103,6 @@ internal sealed class AddMacroCommand : ApplicationCommandModule
             value = $"{value[..1021]}...";
         embed.AddField("Response", value);
 
-        await context.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed)).ConfigureAwait(false);
+        await context.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
     }
 }

@@ -40,7 +40,7 @@ internal sealed class EditMacroCommand : ApplicationCommandModule
             embed.WithColor(DiscordColor.Red);
             embed.WithTitle("Cannot edit macro");
             embed.WithDescription("No name was specified.");
-            await context.CreateResponseAsync(embed, true).ConfigureAwait(false);
+            await context.CreateResponseAsync(embed, true);
             return;
         }
 
@@ -49,7 +49,7 @@ internal sealed class EditMacroCommand : ApplicationCommandModule
             embed.WithColor(DiscordColor.Red);
             embed.WithTitle("Cannot edit macro");
             embed.WithDescription($"No macro with the name `{name}` was found.");
-            await context.CreateResponseAsync(embed, true).ConfigureAwait(false);
+            await context.CreateResponseAsync(embed, true);
             return;
         }
 
@@ -63,7 +63,7 @@ internal sealed class EditMacroCommand : ApplicationCommandModule
             modal.AddInput("Response", initialValue: macro.Response, inputStyle: TextInputStyle.Paragraph);
 
         DiscordModalResponse response =
-            await modal.Build().RespondToAsync(context.Interaction, TimeSpan.FromMinutes(5)).ConfigureAwait(false);
+            await modal.Build().RespondToAsync(context.Interaction, TimeSpan.FromMinutes(5));
 
         if (response != DiscordModalResponse.Success)
             return;
@@ -74,7 +74,7 @@ internal sealed class EditMacroCommand : ApplicationCommandModule
             {
                 m.Aliases = new List<string>(aliasesInput.Value?.Split() ?? ArraySegment<string>.Empty);
                 m.Response = responseInput.Value!;
-            }).ConfigureAwait(false);
+            });
 
             embed.WithColor(DiscordColor.Green);
             embed.WithTitle("Macro edited");
@@ -96,6 +96,6 @@ internal sealed class EditMacroCommand : ApplicationCommandModule
             embed.WithDescription(exception.Message);
         }
 
-        await context.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed)).ConfigureAwait(false);
+        await context.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
     }
 }

@@ -80,7 +80,7 @@ internal sealed class BotService : BackgroundService
 
         RegisterEvents(slashCommands);
 
-        await _discordClient.ConnectAsync().ConfigureAwait(false);
+        await _discordClient.ConnectAsync();
     }
 
     private Task OnReady(DiscordClient sender, ReadyEventArgs e)

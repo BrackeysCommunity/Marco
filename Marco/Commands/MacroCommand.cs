@@ -46,8 +46,8 @@ internal sealed class MacroCommand : ApplicationCommandModule
         }
 
         builder.WithContent(response);
-        await context.CreateResponseAsync("The macro has been sent.", true).ConfigureAwait(false);
-        await context.Channel.SendMessageAsync(builder).ConfigureAwait(false);
+        await context.CreateResponseAsync("The macro has been sent.", true);
+        await context.Channel.SendMessageAsync(builder);
     }
 
     [SlashCommand("macro", "Executes a macro.")]
@@ -72,7 +72,7 @@ internal sealed class MacroCommand : ApplicationCommandModule
         }
 
         builder.WithContent(response);
-        await context.CreateResponseAsync(builder).ConfigureAwait(false);
+        await context.CreateResponseAsync(builder);
         _cooldownService.UpdateCooldown(context.Channel, macro);
     }
 
@@ -80,7 +80,7 @@ internal sealed class MacroCommand : ApplicationCommandModule
     {
         if (!_macroService.TryGetMacro(context.Guild, macroName, out Macro? macro))
         {
-            await context.CreateResponseAsync($"The macro `{macroName}` doesn't exist.", true).ConfigureAwait(false);
+            await context.CreateResponseAsync($"The macro `{macroName}` doesn't exist.", true);
             return null;
         }
 
@@ -88,7 +88,7 @@ internal sealed class MacroCommand : ApplicationCommandModule
 
         if (macro.ChannelId.HasValue && macro.ChannelId.Value != channel.Id)
         {
-            await context.CreateResponseAsync($"The macro `{macroName}` cannot be executed here.", true).ConfigureAwait(false);
+            await context.CreateResponseAsync($"The macro `{macroName}` cannot be executed here.", true);
             return null;
         }
 
@@ -96,7 +96,7 @@ internal sealed class MacroCommand : ApplicationCommandModule
         {
             await context
                 .CreateResponseAsync($"The macro `{macroName}` is on cooldown because it was very recently executed.", true)
-                .ConfigureAwait(false);
+                ;
             return null;
         }
 

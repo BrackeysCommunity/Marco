@@ -87,8 +87,8 @@ internal sealed class MacroService : BackgroundService
             Response = response
         };
 
-        EntityEntry<Macro> entry = await context.Macros.AddAsync(macro).ConfigureAwait(false);
-        await context.SaveChangesAsync().ConfigureAwait(false);
+        EntityEntry<Macro> entry = await context.Macros.AddAsync(macro);
+        await context.SaveChangesAsync();
         macro = entry.Entity;
 
         if (!_macros.TryGetValue(guild, out Dictionary<string, Macro>? macros))
@@ -130,7 +130,7 @@ internal sealed class MacroService : BackgroundService
         await using AsyncServiceScope scope = _scopeFactory.CreateAsyncScope();
         await using var context = scope.ServiceProvider.GetRequiredService<MarcoContext>();
         context.Remove(macro);
-        await context.SaveChangesAsync().ConfigureAwait(false);
+        await context.SaveChangesAsync();
     }
 
     /// <summary>
@@ -168,7 +168,7 @@ internal sealed class MacroService : BackgroundService
         await using AsyncServiceScope scope = _scopeFactory.CreateAsyncScope();
         await using var context = scope.ServiceProvider.GetRequiredService<MarcoContext>();
         context.Update(macro);
-        await context.SaveChangesAsync().ConfigureAwait(false);
+        await context.SaveChangesAsync();
 
         return macro;
     }
@@ -334,7 +334,7 @@ internal sealed class MacroService : BackgroundService
     {
         await using AsyncServiceScope scope = _scopeFactory.CreateAsyncScope();
         await using var context = scope.ServiceProvider.GetRequiredService<MarcoContext>();
-        await context.Database.EnsureCreatedAsync(stoppingToken).ConfigureAwait(false);
+        await context.Database.EnsureCreatedAsync(stoppingToken);
 
         _discordClient.GuildAvailable += OnGuildAvailable;
     }

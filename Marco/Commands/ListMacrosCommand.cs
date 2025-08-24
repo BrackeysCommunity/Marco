@@ -39,7 +39,7 @@ internal sealed class ListMacrosCommand : ApplicationCommandModule
             {
                 var names = new List<string>();
                 string type = grouping.Key.HasValue
-                    ? (await context.Client.GetChannelAsync(grouping.Key.Value).ConfigureAwait(false)).Name
+                    ? (await context.Client.GetChannelAsync(grouping.Key.Value)).Name
                     : "Global";
 
                 foreach (Macro macro in group.OrderBy(m => m.Name))
@@ -49,6 +49,6 @@ internal sealed class ListMacrosCommand : ApplicationCommandModule
             }
         }
 
-        await context.CreateResponseAsync(embed).ConfigureAwait(false);
+        await context.CreateResponseAsync(embed);
     }
 }

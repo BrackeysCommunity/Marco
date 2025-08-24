@@ -35,13 +35,13 @@ internal sealed class DeleteMacroCommand : ApplicationCommandModule
             embed.WithColor(DiscordColor.Red);
             embed.WithTitle("Cannot delete macro");
             embed.WithDescription("No name was specified.");
-            await context.CreateResponseAsync(embed, true).ConfigureAwait(false);
+            await context.CreateResponseAsync(embed, true);
             return;
         }
 
         try
         {
-            await _macroService.DeleteMacroAsync(context.Guild, name).ConfigureAwait(false);
+            await _macroService.DeleteMacroAsync(context.Guild, name);
 
             embed.WithColor(DiscordColor.Green);
             embed.WithTitle("Macro deleted");
@@ -55,6 +55,6 @@ internal sealed class DeleteMacroCommand : ApplicationCommandModule
             embed.WithDescription(exception.Message);
         }
 
-        await context.CreateResponseAsync(embed).ConfigureAwait(false);
+        await context.CreateResponseAsync(embed);
     }
 }

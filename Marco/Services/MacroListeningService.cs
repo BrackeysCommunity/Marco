@@ -86,17 +86,17 @@ internal sealed class MacroListeningService : BackgroundService
                 _logger.LogInformation("{Author} used channel macro \'{Command}\' in {Channel} but is on cooldown", e.Author, command, channel);
 
                 if (cooldownEmoji is not null)
-                    await e.Message.CreateReactionAsync(cooldownEmoji).ConfigureAwait(false);
+                    await e.Message.CreateReactionAsync(cooldownEmoji);
             }
             else
             {
                 _logger.LogInformation("{Author} used channel macro \'{Command}\' in {Channel}", e.Author, command, channel);
 
                 if (successEmoji is not null)
-                    await e.Message.CreateReactionAsync(successEmoji).ConfigureAwait(false);
+                    await e.Message.CreateReactionAsync(successEmoji);
 
                 _cooldownService.UpdateCooldown(channel, macro);
-                await channel.SendMessageAsync(macro.Response).ConfigureAwait(false);
+                await channel.SendMessageAsync(macro.Response);
             }
         }
         else if (_macroService.TryGetGlobalMacro(guild, command, out macro))
@@ -106,14 +106,14 @@ internal sealed class MacroListeningService : BackgroundService
                 _logger.LogInformation("{Author} used global macro \'{Command}\' in {Channel} but is on cooldown", e.Author, command, channel);
 
                 if (cooldownEmoji is not null)
-                    await e.Message.CreateReactionAsync(cooldownEmoji).ConfigureAwait(false);
+                    await e.Message.CreateReactionAsync(cooldownEmoji);
             }
             else
             {
                 _logger.LogInformation("{Author} used global macro \'{Command}\' in {Channel}", e.Author, command, channel);
 
                 if (successEmoji is not null)
-                    await e.Message.CreateReactionAsync(successEmoji).ConfigureAwait(false);
+                    await e.Message.CreateReactionAsync(successEmoji);
 
                 _cooldownService.UpdateCooldown(channel, macro);
 
@@ -137,7 +137,7 @@ internal sealed class MacroListeningService : BackgroundService
                 }
 
                 builder.WithContent(response);
-                await channel.SendMessageAsync(builder).ConfigureAwait(false);
+                await channel.SendMessageAsync(builder);
             }
         }
         else
@@ -145,7 +145,7 @@ internal sealed class MacroListeningService : BackgroundService
             _logger.LogInformation("{Author} used unknown macro \'{Command}\' in {Channel}", e.Author, command, channel);
 
             if (unknownEmoji is not null)
-                await e.Message.CreateReactionAsync(unknownEmoji).ConfigureAwait(false);
+                await e.Message.CreateReactionAsync(unknownEmoji);
         }
     }
 }
