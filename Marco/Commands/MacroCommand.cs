@@ -1,9 +1,11 @@
+using Cysharp.Text;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 using JetBrains.Annotations;
 using Marco.AutocompleteProviders;
 using Marco.Data;
+using Marco.Extensions;
 using Marco.Services;
 
 namespace Marco.Commands;
@@ -28,7 +30,8 @@ internal sealed class MacroCommand : ApplicationCommandModule
     [SlashRequireGuild]
     [UsedImplicitly]
     public async Task AnonymousMacroAsync(InteractionContext context,
-        [Option("macro", "The name of the macro.", true)] [Autocomplete(typeof(MacroAutocompleteProvider))] string macroName)
+        [Option("macro", "The name of the macro.", true)] [Autocomplete(typeof(MacroAutocompleteProvider))] string macroName,
+        [Option("mention", "The user to mention.")] DiscordUser? mentionUser = null)
     {
         Macro? macro = await VerifyMacroAsync(context, macroName);
         if (macro is null)
@@ -37,15 +40,32 @@ internal sealed class MacroCommand : ApplicationCommandModule
         }
 
         var builder = new DiscordMessageBuilder();
-        string response = macro.Response;
+        using Utf16ValueStringBuilder response = ZString.CreateStringBuilder();
+        response.Append(macro.Response);
+        bool isSilent = response.StartsWith("@silent ");
 
-        if (response.StartsWith("@silent "))
+        if (isSilent)
         {
-            response = response[8..];
+            response.Remove(0, 8);
+        }
+
+        if (mentionUser is not null)
+        {
+            if (!response.Contains($"<@{mentionUser.Id}>") && !response.Contains($"<@!{mentionUser.Id}>"))
+            {
+                response.AppendLine();
+                response.AppendLine();
+                response.Append(mentionUser.Mention);
+            }
+
+            builder.AddMention(new UserMention(mentionUser));
+        }
+        else if (isSilent)
+        {
             builder.SuppressNotifications();
         }
 
-        builder.WithContent(response);
+        builder.WithContent(response.ToString());
         await context.CreateResponseAsync("The macro has been sent.", true);
         await context.Channel.SendMessageAsync(builder);
     }
@@ -54,7 +74,8 @@ internal sealed class MacroCommand : ApplicationCommandModule
     [SlashRequireGuild]
     [UsedImplicitly]
     public async Task MacroAsync(InteractionContext context,
-        [Option("macro", "The name of the macro.", true)] [Autocomplete(typeof(MacroAutocompleteProvider))] string macroName)
+        [Option("macro", "The name of the macro.", true)] [Autocomplete(typeof(MacroAutocompleteProvider))] string macroName,
+        [Option("mention", "The user to mention.")] DiscordUser? mentionUser = null)
     {
         Macro? macro = await VerifyMacroAsync(context, macroName);
         if (macro is null)
@@ -63,15 +84,32 @@ internal sealed class MacroCommand : ApplicationCommandModule
         }
 
         var builder = new DiscordInteractionResponseBuilder();
-        string response = macro.Response;
+        using Utf16ValueStringBuilder response = ZString.CreateStringBuilder();
+        response.Append(macro.Response);
+        bool isSilent = response.StartsWith("@silent ");
 
-        if (response.StartsWith("@silent "))
+        if (isSilent)
         {
-            response = response[8..];
+            response.Remove(0, 8);
+        }
+
+        if (mentionUser is not null)
+        {
+            if (!response.Contains($"<@{mentionUser.Id}>") && !response.Contains($"<@!{mentionUser.Id}>"))
+            {
+                response.AppendLine();
+                response.AppendLine();
+                response.Append(mentionUser.Mention);
+            }
+
+            builder.AddMention(new UserMention(mentionUser));
+        }
+        else if (isSilent)
+        {
             builder.SuppressNotifications();
         }
 
-        builder.WithContent(response);
+        builder.WithContent(response.ToString());
         await context.CreateResponseAsync(builder);
         _cooldownService.UpdateCooldown(context.Channel, macro);
     }
@@ -94,9 +132,7 @@ internal sealed class MacroCommand : ApplicationCommandModule
 
         if (_cooldownService.IsOnCooldown(channel, macro))
         {
-            await context
-                .CreateResponseAsync($"The macro `{macroName}` is on cooldown because it was very recently executed.", true)
-                ;
+            await context.CreateResponseAsync($"The macro `{macroName}` is on cooldown because it was very recently executed.", true);
             return null;
         }
 
