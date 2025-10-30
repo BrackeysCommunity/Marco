@@ -58,18 +58,35 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
         params string[]? aliases
     )
     {
-        if (guild is null) throw new ArgumentNullException(nameof(guild));
-        if (name is null) throw new ArgumentNullException(nameof(name));
-        if (response is null) throw new ArgumentNullException(nameof(response));
+        if (guild is null)
+        {
+            throw new ArgumentNullException(nameof(guild));
+        }
+
+        if (name is null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+
+        if (response is null)
+        {
+            throw new ArgumentNullException(nameof(response));
+        }
 
         if (string.IsNullOrWhiteSpace(name))
+        {
             throw new ArgumentException("Name cannot be empty or whitespace", nameof(name));
+        }
 
         if (string.IsNullOrWhiteSpace(response))
+        {
             throw new ArgumentException("Response cannot be empty or whitespace", nameof(response));
+        }
 
         if (TryGetMacro(guild, name, out _))
+        {
             throw new InvalidOperationException("Macro already exists");
+        }
 
         await using AsyncServiceScope scope = _scopeFactory.CreateAsyncScope();
         await using var context = scope.ServiceProvider.GetRequiredService<MarcoContext>();
@@ -96,7 +113,9 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
 
         macros[macro.Name] = macro;
         foreach (string alias in macro.Aliases)
+        {
             macros[alias] = macro;
+        }
 
         return macro;
     }
@@ -111,17 +130,28 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
     /// </exception>
     public async Task DeleteMacroAsync(DiscordGuild guild, string name)
     {
-        if (guild is null) throw new ArgumentNullException(nameof(guild));
-        if (name is null) throw new ArgumentNullException(nameof(name));
+        if (guild is null)
+        {
+            throw new ArgumentNullException(nameof(guild));
+        }
+
+        if (name is null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
 
         if (!TryGetMacro(guild, name, out Macro? macro))
+        {
             return;
+        }
 
         if (_macros.TryGetValue(guild, out Dictionary<string, Macro>? macros))
         {
             macros.Remove(macro.Name);
             foreach (string alias in macro.Aliases)
+            {
                 macros.Remove(alias);
+            }
         }
 
         await using AsyncServiceScope scope = _scopeFactory.CreateAsyncScope();
@@ -141,12 +171,25 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
     /// </exception>
     public async Task<Macro> EditMacroAsync(DiscordGuild guild, string name, Action<Macro> action)
     {
-        if (guild is null) throw new ArgumentNullException(nameof(guild));
-        if (name is null) throw new ArgumentNullException(nameof(name));
-        if (action is null) throw new ArgumentNullException(nameof(action));
+        if (guild is null)
+        {
+            throw new ArgumentNullException(nameof(guild));
+        }
+
+        if (name is null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+
+        if (action is null)
+        {
+            throw new ArgumentNullException(nameof(action));
+        }
 
         if (!TryGetMacro(guild, name, out Macro? macro))
+        {
             throw new InvalidOperationException("Macro does not exist");
+        }
 
         string[] aliases = macro.Aliases?.WhereNot(string.IsNullOrWhiteSpace).ToArray() ?? Array.Empty<string>();
 
@@ -156,10 +199,14 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
         if (_macros.TryGetValue(guild, out Dictionary<string, Macro>? macros))
         {
             foreach (string alias in aliases)
+            {
                 macros.Remove(alias);
+            }
 
             foreach (string alias in macro.Aliases)
+            {
                 macros.Add(alias, macro);
+            }
         }
 
         await using AsyncServiceScope scope = _scopeFactory.CreateAsyncScope();
@@ -178,7 +225,11 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
     /// <exception cref="ArgumentNullException"><paramref name="guild" /> is <see langword="null" />.</exception>
     public IReadOnlyCollection<Macro> GetMacros(DiscordGuild guild)
     {
-        if (guild is null) throw new ArgumentNullException(nameof(guild));
+        if (guild is null)
+        {
+            throw new ArgumentNullException(nameof(guild));
+        }
+
         return _macros.TryGetValue(guild, out Dictionary<string, Macro>? macros)
             ? macros.Values.Distinct().ToArray()
             : ArraySegment<Macro>.Empty;
@@ -193,8 +244,16 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
     /// <exception cref="ArgumentException"><paramref name="channel" /> is not a guild channel.</exception>
     public IReadOnlyCollection<Macro> GetMacros(DiscordChannel channel)
     {
-        if (channel is null) throw new ArgumentNullException(nameof(channel));
-        if (channel.Guild is not { } guild) throw new ArgumentException("Channel must be in a guild", nameof(channel));
+        if (channel is null)
+        {
+            throw new ArgumentNullException(nameof(channel));
+        }
+
+        if (channel.Guild is not { } guild)
+        {
+            throw new ArgumentException("Channel must be in a guild", nameof(channel));
+        }
+
         return _macros.TryGetValue(guild, out Dictionary<string, Macro>? macros)
             ? macros.Values.Where(m => m.ChannelId == channel.Id).Distinct().ToArray()
             : ArraySegment<Macro>.Empty;
@@ -216,8 +275,15 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
     /// </exception>
     public bool TryGetChannelMacro(DiscordChannel channel, string name, [NotNullWhen(true)] out Macro? macro)
     {
-        if (channel is null) throw new ArgumentNullException(nameof(channel));
-        if (name is null) throw new ArgumentNullException(nameof(name));
+        if (channel is null)
+        {
+            throw new ArgumentNullException(nameof(channel));
+        }
+
+        if (name is null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
 
         if (channel.Guild is not { } guild)
         {
@@ -255,8 +321,15 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
     /// </exception>
     public bool TryGetGlobalMacro(DiscordGuild guild, string name, [NotNullWhen(true)] out Macro? macro)
     {
-        if (guild is null) throw new ArgumentNullException(nameof(guild));
-        if (name is null) throw new ArgumentNullException(nameof(name));
+        if (guild is null)
+        {
+            throw new ArgumentNullException(nameof(guild));
+        }
+
+        if (name is null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
 
         if (_macros.TryGetValue(guild, out Dictionary<string, Macro>? macros) && macros.TryGetValue(name, out macro))
         {
@@ -288,11 +361,20 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
     /// </exception>
     public bool TryGetMacro(DiscordGuild guild, string name, [NotNullWhen(true)] out Macro? macro)
     {
-        if (guild is null) throw new ArgumentNullException(nameof(guild));
-        if (name is null) throw new ArgumentNullException(nameof(name));
+        if (guild is null)
+        {
+            throw new ArgumentNullException(nameof(guild));
+        }
+
+        if (name is null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
 
         if (_macros.TryGetValue(guild, out Dictionary<string, Macro>? macros) && macros.TryGetValue(name, out macro))
+        {
             return true;
+        }
 
         macro = null;
         return false;
@@ -304,7 +386,10 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
     /// <param name="guild">The guild whose macros to retrieve.</param>
     public async Task UpdateFromDatabaseAsync(DiscordGuild guild)
     {
-        if (guild is null) throw new ArgumentNullException(nameof(guild));
+        if (guild is null)
+        {
+            throw new ArgumentNullException(nameof(guild));
+        }
 
         if (!_macros.TryGetValue(guild, out Dictionary<string, Macro>? macros))
         {
@@ -320,7 +405,9 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
             macros[macro.Name] = macro;
             List<string> aliases = macro.Aliases;
             for (var index = 0; index < aliases.Count; index++)
+            {
                 macros[aliases[index]] = macro;
+            }
         }
 
         _logger.LogInformation("Loaded {Count} macros for {Guild}", macros.Count, guild);

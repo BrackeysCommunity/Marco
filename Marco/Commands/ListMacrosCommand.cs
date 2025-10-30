@@ -46,7 +46,9 @@ internal sealed class ListMacrosCommand
                     : "Global";
 
                 foreach (Macro macro in group.OrderBy(m => m.Name))
+                {
                     names.Add(macro.Name);
+                }
 
                 embed.AddField(type, Formatter.BlockCode(string.Join('\n', names)), true);
             }

@@ -69,8 +69,16 @@ internal sealed class Macro : IEquatable<Macro>
     /// </returns>
     public bool Equals(Macro? other)
     {
-        if (ReferenceEquals(null, other)) return false;
-        if (ReferenceEquals(this, other)) return true;
+        if (ReferenceEquals(null, other))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
         return GuildId == other.GuildId && Name == other.Name;
     }
 

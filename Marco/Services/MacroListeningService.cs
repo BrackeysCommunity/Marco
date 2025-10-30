@@ -40,16 +40,31 @@ internal sealed class MacroListeningService : IEventHandler<MessageCreatedEventA
     /// <inheritdoc />
     public async Task HandleEventAsync(DiscordClient sender, MessageCreatedEventArgs e)
     {
-        if (e.Guild is not { } guild) return;
-        if (e.Author.IsBot) return;
-        if (e.Message.Content is not { } content || string.IsNullOrWhiteSpace(content)) return;
+        if (e.Guild is not { } guild)
+        {
+            return;
+        }
+
+        if (e.Author.IsBot)
+        {
+            return;
+        }
+
+        if (e.Message.Content is not { } content || string.IsNullOrWhiteSpace(content))
+        {
+            return;
+        }
 
         if (!_configurationService.TryGetGuildConfiguration(guild, out GuildConfiguration? guildConfiguration))
+        {
             guildConfiguration = new GuildConfiguration();
+        }
 
         string prefix = guildConfiguration.Prefix;
         if (!content.StartsWith(prefix))
+        {
             return;
+        }
 
         int spaceIndex = content.IndexOf(' ');
 
@@ -62,9 +77,20 @@ internal sealed class MacroListeningService : IEventHandler<MessageCreatedEventA
         DiscordEmoji? successEmoji = null;
         DiscordEmoji? unknownEmoji = null;
 
-        if (!string.IsNullOrWhiteSpace(cooldownReaction)) DiscordEmoji.TryFromName(sender, cooldownReaction, out cooldownEmoji);
-        if (!string.IsNullOrWhiteSpace(successReaction)) DiscordEmoji.TryFromName(sender, successReaction, out successEmoji);
-        if (!string.IsNullOrWhiteSpace(unknownReaction)) DiscordEmoji.TryFromName(sender, unknownReaction, out unknownEmoji);
+        if (!string.IsNullOrWhiteSpace(cooldownReaction))
+        {
+            DiscordEmoji.TryFromName(sender, cooldownReaction, out cooldownEmoji);
+        }
+
+        if (!string.IsNullOrWhiteSpace(successReaction))
+        {
+            DiscordEmoji.TryFromName(sender, successReaction, out successEmoji);
+        }
+
+        if (!string.IsNullOrWhiteSpace(unknownReaction))
+        {
+            DiscordEmoji.TryFromName(sender, unknownReaction, out unknownEmoji);
+        }
 
         DiscordChannel channel = e.Channel;
 
@@ -76,14 +102,18 @@ internal sealed class MacroListeningService : IEventHandler<MessageCreatedEventA
                     command, channel);
 
                 if (cooldownEmoji is not null)
+                {
                     await e.Message.CreateReactionAsync(cooldownEmoji);
+                }
             }
             else
             {
                 _logger.LogInformation("{Author} used channel macro \'{Command}\' in {Channel}", e.Author, command, channel);
 
                 if (successEmoji is not null)
+                {
                     await e.Message.CreateReactionAsync(successEmoji);
+                }
 
                 _cooldownService.UpdateCooldown(channel, macro);
                 await channel.SendMessageAsync(macro.Response);
@@ -97,14 +127,18 @@ internal sealed class MacroListeningService : IEventHandler<MessageCreatedEventA
                     command, channel);
 
                 if (cooldownEmoji is not null)
+                {
                     await e.Message.CreateReactionAsync(cooldownEmoji);
+                }
             }
             else
             {
                 _logger.LogInformation("{Author} used global macro \'{Command}\' in {Channel}", e.Author, command, channel);
 
                 if (successEmoji is not null)
+                {
                     await e.Message.CreateReactionAsync(successEmoji);
+                }
 
                 _cooldownService.UpdateCooldown(channel, macro);
 
@@ -136,7 +170,9 @@ internal sealed class MacroListeningService : IEventHandler<MessageCreatedEventA
             _logger.LogInformation("{Author} used unknown macro \'{Command}\' in {Channel}", e.Author, command, channel);
 
             if (unknownEmoji is not null)
+            {
                 await e.Message.CreateReactionAsync(unknownEmoji);
+            }
         }
     }
 }

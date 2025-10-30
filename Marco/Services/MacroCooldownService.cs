@@ -30,20 +30,40 @@ internal sealed class MacroCooldownService
     /// <exception cref="ArgumentException"><paramref name="channel" /> is not a guild channel.</exception>
     public bool IsOnCooldown(DiscordChannel channel, Macro macro)
     {
-        if (channel is null) throw new ArgumentNullException(nameof(channel));
-        if (macro is null) throw new ArgumentNullException(nameof(macro));
+        if (channel is null)
+        {
+            throw new ArgumentNullException(nameof(channel));
+        }
 
-        if (channel.Guild is not { } guild) throw new ArgumentException("Channel must be in a guild.", nameof(channel));
+        if (macro is null)
+        {
+            throw new ArgumentNullException(nameof(macro));
+        }
+
+        if (channel.Guild is not { } guild)
+        {
+            throw new ArgumentException("Channel must be in a guild.", nameof(channel));
+        }
+
         if (!_configurationService.TryGetGuildConfiguration(guild, out GuildConfiguration? guildConfiguration))
+        {
             guildConfiguration = new GuildConfiguration();
+        }
 
-        if (guildConfiguration.Cooldown == 0) return false;
+        if (guildConfiguration.Cooldown == 0)
+        {
+            return false;
+        }
 
         if (!_lastUses.TryGetValue(channel, out Dictionary<Macro, DateTimeOffset>? lastUses))
+        {
             return false;
+        }
 
         if (!lastUses.TryGetValue(macro, out DateTimeOffset lastUse))
+        {
             return false;
+        }
 
         return DateTimeOffset.UtcNow < lastUse + TimeSpan.FromMilliseconds(guildConfiguration.Cooldown);
     }
@@ -60,15 +80,30 @@ internal sealed class MacroCooldownService
     /// <exception cref="ArgumentException"><paramref name="channel" /> is not a guild channel.</exception>
     public void UpdateCooldown(DiscordChannel channel, Macro macro)
     {
-        if (channel is null) throw new ArgumentNullException(nameof(channel));
-        if (macro is null) throw new ArgumentNullException(nameof(macro));
+        if (channel is null)
+        {
+            throw new ArgumentNullException(nameof(channel));
+        }
 
-        if (channel.Guild is not { } guild) throw new ArgumentException("Channel must be in a guild.", nameof(channel));
+        if (macro is null)
+        {
+            throw new ArgumentNullException(nameof(macro));
+        }
+
+        if (channel.Guild is not { } guild)
+        {
+            throw new ArgumentException("Channel must be in a guild.", nameof(channel));
+        }
 
         if (!_configurationService.TryGetGuildConfiguration(guild, out GuildConfiguration? guildConfiguration))
+        {
             guildConfiguration = new GuildConfiguration();
+        }
 
-        if (guildConfiguration.Cooldown == 0) return;
+        if (guildConfiguration.Cooldown == 0)
+        {
+            return;
+        }
 
         if (!_lastUses.TryGetValue(channel, out Dictionary<Macro, DateTimeOffset>? lastUses))
         {
