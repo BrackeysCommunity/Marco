@@ -23,7 +23,9 @@ internal sealed class StringListToBytesConverter : ValueConverter<List<string>, 
         var result = new List<string>(count);
 
         for (var i = 0; i < count; i++)
+        {
             result.Add(reader.ReadString());
+        }
 
         return result;
     }
@@ -41,7 +43,9 @@ internal sealed class StringListToBytesConverter : ValueConverter<List<string>, 
         {
             writer.Write(list.Count);
             foreach (string item in list)
+            {
                 writer.Write(item);
+            }
         }
 
         return stream.ToArray();

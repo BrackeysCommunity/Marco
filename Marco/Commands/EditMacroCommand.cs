@@ -1,18 +1,18 @@
-using DSharpPlus;
+using System.ComponentModel;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
+using DSharpPlus.Commands.Processors.SlashCommands.ArgumentModifiers;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
-using Humanizer;
 using JetBrains.Annotations;
 using Marco.AutocompleteProviders;
 using Marco.Data;
-using Marco.Extensions;
-using Marco.Interactivity;
 using Marco.Services;
+using DiscordModalBuilder = DSharpPlus.Entities.DiscordModalBuilder;
 
 namespace Marco.Commands;
 
-internal sealed class EditMacroCommand : ApplicationCommandModule
+internal sealed class EditMacroCommand
 {
     private readonly MacroService _macroService;
 
@@ -25,12 +25,15 @@ internal sealed class EditMacroCommand : ApplicationCommandModule
         _macroService = macroService;
     }
 
-    [SlashCommand("editmacro", "Edits an existing macro.", false)]
-    [SlashRequireGuild]
+    [Command("editmacro")]
+    [Description("Edits an existing macro.")]
+    [RequireGuild]
     [UsedImplicitly]
     public async Task EditMacroAsync(
-        InteractionContext context,
-        [Option("name", "The name of the macro."), Autocomplete(typeof(MacroAutocompleteProvider))] string name
+        SlashCommandContext context,
+        [Parameter("name"), Description("The name of the macro."),
+         SlashAutoCompleteProvider<MacroAutocompleteProvider>]
+        string name
     )
     {
         var embed = new DiscordEmbedBuilder();
@@ -40,62 +43,40 @@ internal sealed class EditMacroCommand : ApplicationCommandModule
             embed.WithColor(DiscordColor.Red);
             embed.WithTitle("Cannot edit macro");
             embed.WithDescription("No name was specified.");
-            await context.CreateResponseAsync(embed, true);
+            await context.RespondAsync(embed, true);
             return;
         }
 
-        if (!_macroService.TryGetMacro(context.Guild, name, out Macro? macro))
+        DiscordGuild guild = context.Guild!;
+        if (!_macroService.TryGetMacro(guild, name, out Macro? macro))
         {
             embed.WithColor(DiscordColor.Red);
             embed.WithTitle("Cannot edit macro");
             embed.WithDescription($"No macro with the name `{name}` was found.");
-            await context.CreateResponseAsync(embed, true);
+            await context.RespondAsync(embed, true);
             return;
         }
 
-        var modal = new DiscordModalBuilder(context.Client);
-        modal.WithTitle($"Edit macro '{name}'");
+        var modal = new DiscordModalBuilder();
+        modal.WithCustomId($"edit-macro_{macro.Name}");
+        modal.WithTitle($"Edit macro '{macro.Name}'");
 
-        DiscordChannel? channel = null;
-        DiscordModalTextInput aliasesInput =
-            modal.AddInput("Aliases (space-separated)", placeholder: "e.g. null nullreference nullref", isRequired: false, initialValue: string.Join(' ', macro.Aliases));
-        DiscordModalTextInput responseInput =
-            modal.AddInput("Response", initialValue: macro.Response, inputStyle: TextInputStyle.Paragraph);
+        var aliasInputComponent = new DiscordTextInputComponent(
+            customId: "aliases",
+            placeholder: "e.g. null nullreference nullref",
+            value: string.Join(' ', macro.Aliases),
+            required: false,
+            style: DiscordTextInputStyle.Short);
 
-        DiscordModalResponse response =
-            await modal.Build().RespondToAsync(context.Interaction, TimeSpan.FromMinutes(5));
+        var responseInputComponent = new DiscordTextInputComponent(
+            customId: "response",
+            value: macro.Response,
+            required: true,
+            style: DiscordTextInputStyle.Paragraph);
 
-        if (response != DiscordModalResponse.Success)
-            return;
+        modal.AddTextInput(aliasInputComponent, "Aliases (space-separated)", "Alternative names for the macro");
+        modal.AddTextInput(responseInputComponent, "Response");
 
-        try
-        {
-            macro = await _macroService.EditMacroAsync(context.Guild, name, m =>
-            {
-                m.Aliases = new List<string>(aliasesInput.Value?.Split() ?? ArraySegment<string>.Empty);
-                m.Response = responseInput.Value!;
-            });
-
-            embed.WithColor(DiscordColor.Green);
-            embed.WithTitle("Macro edited");
-            embed.WithDescription($"The macro `{name}` has been edited.");
-            embed.AddField("Name", macro.Name, true);
-            embed.AddField("Type", channel?.Mention ?? "Global", true);
-            embed.AddFieldIf(macro.Aliases.Count > 0 , "Alias".ToQuantity(macro.Aliases.Count), string.Join(' ', macro.Aliases), true);
-
-            string? value = responseInput.Value;
-            if (value is {Length: > 1024})
-                value = $"{value[..1021]}...";
-            embed.AddField("Response", value);
-        }
-        catch (Exception exception)
-        {
-            embed.WithColor(DiscordColor.Red);
-            embed.WithAuthor(exception.GetType().Name);
-            embed.WithTitle("Cannot edit macro");
-            embed.WithDescription(exception.Message);
-        }
-
-        await context.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
+        await context.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal, modal);
     }
 }

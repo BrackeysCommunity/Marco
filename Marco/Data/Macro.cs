@@ -6,7 +6,7 @@ internal sealed class Macro : IEquatable<Macro>
     ///     Gets or sets the list of aliases for the macro.
     /// </summary>
     /// <value>The list of aliases.</value>
-    public List<string> Aliases { get; set; } = new();
+    public List<string> Aliases { get; set; } = [];
 
     /// <summary>
     ///     Gets or sets the ID of the channel to which this macro is restricted.
@@ -69,8 +69,16 @@ internal sealed class Macro : IEquatable<Macro>
     /// </returns>
     public bool Equals(Macro? other)
     {
-        if (ReferenceEquals(null, other)) return false;
-        if (ReferenceEquals(this, other)) return true;
+        if (ReferenceEquals(null, other))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
         return GuildId == other.GuildId && Name == other.Name;
     }
 

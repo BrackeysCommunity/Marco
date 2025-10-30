@@ -1,7 +1,9 @@
+using System.ComponentModel;
 using DSharpPlus;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 using Humanizer;
 using JetBrains.Annotations;
 using Marco.Data;
@@ -9,7 +11,7 @@ using Marco.Services;
 
 namespace Marco.Commands;
 
-internal sealed class ListMacrosCommand : ApplicationCommandModule
+internal sealed class ListMacrosCommand
 {
     private readonly MacroService _macroService;
 
@@ -22,12 +24,13 @@ internal sealed class ListMacrosCommand : ApplicationCommandModule
         _macroService = macroService;
     }
 
-    [SlashCommand("listmacros", "List all available macros.")]
-    [SlashRequireGuild]
+    [Command("listmacros")]
+    [Description("List all available macros.")]
+    [RequireGuild]
     [UsedImplicitly]
-    public async Task ListMacrosAsync(InteractionContext context)
+    public async Task ListMacrosAsync(SlashCommandContext context)
     {
-        IReadOnlyCollection<Macro> macros = _macroService.GetMacros(context.Guild).Distinct().ToArray();
+        IReadOnlyCollection<Macro> macros = _macroService.GetMacros(context.Guild!).Distinct().ToArray();
         var embed = new DiscordEmbedBuilder();
         embed.WithColor(DiscordColor.CornflowerBlue);
         embed.WithTitle($"{"macro".ToQuantity(macros.Count)} available");
@@ -43,12 +46,14 @@ internal sealed class ListMacrosCommand : ApplicationCommandModule
                     : "Global";
 
                 foreach (Macro macro in group.OrderBy(m => m.Name))
+                {
                     names.Add(macro.Name);
+                }
 
                 embed.AddField(type, Formatter.BlockCode(string.Join('\n', names)), true);
             }
         }
 
-        await context.CreateResponseAsync(embed);
+        await context.RespondAsync(embed);
     }
 }
