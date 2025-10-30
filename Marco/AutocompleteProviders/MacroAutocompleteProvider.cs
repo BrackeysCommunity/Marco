@@ -1,26 +1,28 @@
+using DSharpPlus.Commands.Processors.SlashCommands;
+using DSharpPlus.Commands.Processors.SlashCommands.ArgumentModifiers;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
 using Marco.Data;
 using Marco.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Marco.AutocompleteProviders;
 
-internal sealed class MacroAutocompleteProvider : IAutocompleteProvider
+internal sealed class MacroAutocompleteProvider : IAutoCompleteProvider
 {
     /// <inheritdoc />
-    public Task<IEnumerable<DiscordAutoCompleteChoice>> Provider(AutocompleteContext context)
+    public ValueTask<IEnumerable<DiscordAutoCompleteChoice>> AutoCompleteAsync(AutoCompleteContext context)
     {
-        var macroService = context.Services.GetRequiredService<MacroService>();
-        IReadOnlyCollection<Macro> macros = macroService.GetMacros(context.Guild);
+        MacroService macroService = context.ServiceProvider.GetRequiredService<MacroService>();
+        IReadOnlyCollection<Macro> macros = macroService.GetMacros(context.Guild!);
 
         var result = new List<DiscordAutoCompleteChoice>();
-        string optionValue = context.OptionValue.ToString() ?? string.Empty;
+        string optionValue = context.UserInput ?? string.Empty;
         bool hasOptionValue = !string.IsNullOrWhiteSpace(optionValue);
 
         foreach (Macro macro in macros)
         {
-            if (macro.ChannelId.HasValue && macro.ChannelId.Value != context.Channel.Id)
+            ulong? channelId = macro.ChannelId;
+            if (channelId.HasValue && channelId.Value != context.Channel.Id)
             {
                 continue;
             }
@@ -31,7 +33,7 @@ internal sealed class MacroAutocompleteProvider : IAutocompleteProvider
             }
 
             result.Add(new DiscordAutoCompleteChoice(macro.Name, macro.Name));
-            
+
             if (result.Count >= 25)
             {
                 // Discord only allows 25 choices per autocomplete response
@@ -40,6 +42,6 @@ internal sealed class MacroAutocompleteProvider : IAutocompleteProvider
         }
 
         result.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.Ordinal));
-        return Task.FromResult<IEnumerable<DiscordAutoCompleteChoice>>(result);
+        return ValueTask.FromResult<IEnumerable<DiscordAutoCompleteChoice>>(result);
     }
 }

@@ -15,11 +15,10 @@ namespace Marco.Services;
 /// <summary>
 ///     Represents a service which manages macros.
 /// </summary>
-internal sealed class MacroService : BackgroundService
+internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvailableEventArgs>
 {
     private readonly ILogger<MacroService> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly DiscordClient _discordClient;
     private readonly Dictionary<DiscordGuild, Dictionary<string, Macro>> _macros = new();
 
     /// <summary>
@@ -27,12 +26,10 @@ internal sealed class MacroService : BackgroundService
     /// </summary>
     /// <param name="logger">The logger.</param>
     /// <param name="scopeFactory">The scope factory.</param>
-    /// <param name="discordClient">The Discord client.</param>
-    public MacroService(ILogger<MacroService> logger, IServiceScopeFactory scopeFactory, DiscordClient discordClient)
+    public MacroService(ILogger<MacroService> logger, IServiceScopeFactory scopeFactory)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
-        _discordClient = discordClient;
     }
 
     /// <summary>
@@ -330,17 +327,16 @@ internal sealed class MacroService : BackgroundService
     }
 
     /// <inheritdoc />
+    public Task HandleEventAsync(DiscordClient sender, GuildAvailableEventArgs e)
+    {
+        return UpdateFromDatabaseAsync(e.Guild);
+    }
+
+    /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await using AsyncServiceScope scope = _scopeFactory.CreateAsyncScope();
         await using var context = scope.ServiceProvider.GetRequiredService<MarcoContext>();
         await context.Database.EnsureCreatedAsync(stoppingToken);
-
-        _discordClient.GuildAvailable += OnGuildAvailable;
-    }
-
-    private Task OnGuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
-    {
-        return UpdateFromDatabaseAsync(e.Guild);
     }
 }

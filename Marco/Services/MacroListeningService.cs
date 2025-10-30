@@ -3,7 +3,6 @@ using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Marco.Configuration;
 using Marco.Data;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Marco.Services;
@@ -11,10 +10,9 @@ namespace Marco.Services;
 /// <summary>
 ///     Represents a service which listens for macros.
 /// </summary>
-internal sealed class MacroListeningService : BackgroundService
+internal sealed class MacroListeningService : IEventHandler<MessageCreatedEventArgs>
 {
     private readonly ILogger<MacroListeningService> _logger;
-    private readonly DiscordClient _discordClient;
     private readonly ConfigurationService _configurationService;
     private readonly MacroService _macroService;
     private readonly MacroCooldownService _cooldownService;
@@ -23,33 +21,24 @@ internal sealed class MacroListeningService : BackgroundService
     ///     Initializes a new instance of the <see cref="MacroListeningService" /> class.
     /// </summary>
     /// <param name="logger">The logger.</param>
-    /// <param name="discordClient">The Discord client.</param>
     /// <param name="configurationService">The configuration service.</param>
     /// <param name="macroService">The macro service.</param>
     /// <param name="cooldownService">The macro cooldown service.</param>
     public MacroListeningService(
         ILogger<MacroListeningService> logger,
-        DiscordClient discordClient,
         ConfigurationService configurationService,
         MacroService macroService,
         MacroCooldownService cooldownService
     )
     {
         _logger = logger;
-        _discordClient = discordClient;
         _configurationService = configurationService;
         _macroService = macroService;
         _cooldownService = cooldownService;
     }
 
     /// <inheritdoc />
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        _discordClient.MessageCreated += OnMessageCreated;
-        return Task.CompletedTask;
-    }
-
-    private async Task OnMessageCreated(DiscordClient sender, MessageCreateEventArgs e)
+    public async Task HandleEventAsync(DiscordClient sender, MessageCreatedEventArgs e)
     {
         if (e.Guild is not { } guild) return;
         if (e.Author.IsBot) return;
@@ -83,7 +72,8 @@ internal sealed class MacroListeningService : BackgroundService
         {
             if (_cooldownService.IsOnCooldown(channel, macro))
             {
-                _logger.LogInformation("{Author} used channel macro \'{Command}\' in {Channel} but is on cooldown", e.Author, command, channel);
+                _logger.LogInformation("{Author} used channel macro \'{Command}\' in {Channel} but is on cooldown", e.Author,
+                    command, channel);
 
                 if (cooldownEmoji is not null)
                     await e.Message.CreateReactionAsync(cooldownEmoji);
@@ -103,7 +93,8 @@ internal sealed class MacroListeningService : BackgroundService
         {
             if (_cooldownService.IsOnCooldown(channel, macro))
             {
-                _logger.LogInformation("{Author} used global macro \'{Command}\' in {Channel} but is on cooldown", e.Author, command, channel);
+                _logger.LogInformation("{Author} used global macro \'{Command}\' in {Channel} but is on cooldown", e.Author,
+                    command, channel);
 
                 if (cooldownEmoji is not null)
                     await e.Message.CreateReactionAsync(cooldownEmoji);

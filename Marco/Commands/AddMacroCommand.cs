@@ -1,18 +1,15 @@
+using System.ComponentModel;
 using System.Text.RegularExpressions;
-using DSharpPlus;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
-using Humanizer;
 using JetBrains.Annotations;
-using Marco.Data;
-using Marco.Extensions;
-using Marco.Interactivity;
 using Marco.Services;
 
 namespace Marco.Commands;
 
-internal sealed class AddMacroCommand : ApplicationCommandModule
+internal sealed class AddMacroCommand
 {
     private readonly MacroService _macroService;
 
@@ -25,24 +22,25 @@ internal sealed class AddMacroCommand : ApplicationCommandModule
         _macroService = macroService;
     }
 
-    [SlashCommand("addmacro", "Adds a new macro.", false)]
-    [SlashRequireGuild]
+    [Command("addmacro")]
+    [Description("Adds a new macro.")]
+    [RequireGuild]
     [UsedImplicitly]
     public async Task AddMacro(
-        InteractionContext context,
-        [Option("name", "The name of the macro.")] string name
+        SlashCommandContext context,
+        [Parameter("name"), Description("The name of the macro.")] string name
     )
     {
         var embed = new DiscordEmbedBuilder();
 
-        DiscordGuild guild = context.Guild;
+        DiscordGuild guild = context.Guild!;
 
         if (string.IsNullOrWhiteSpace(name))
         {
             embed.WithColor(DiscordColor.Red);
             embed.WithTitle("Cannot add macro");
             embed.WithDescription("No name was specified.");
-            await context.CreateResponseAsync(embed, true);
+            await context.RespondAsync(embed, true);
             return;
         }
 
@@ -53,56 +51,28 @@ internal sealed class AddMacroCommand : ApplicationCommandModule
             embed.WithColor(DiscordColor.Red);
             embed.WithTitle("Cannot add macro");
             embed.WithDescription($"A macro with the name or alias `{name}` already exists.");
-            await context.CreateResponseAsync(embed, true);
+            await context.RespondAsync(embed, true);
             return;
         }
 
-        var modal = new DiscordModalBuilder(context.Client);
+        var modal = new DiscordModalBuilder();
+        modal.WithCustomId($"add-macro_{name}");
         modal.WithTitle($"Add macro '{name}'");
-        DiscordModalTextInput aliasesInput =
-            modal.AddInput("Aliases (space-separated)", placeholder: "e.g. null nullreference nullref", isRequired: false);
-        DiscordModalTextInput responseInput = modal.AddInput("Response", inputStyle: TextInputStyle.Paragraph);
-        DiscordModalResponse response =
-            await modal.Build().RespondToAsync(context.Interaction, TimeSpan.FromMinutes(5));
 
-        if (response != DiscordModalResponse.Success)
-            return;
+        var aliasInputComponent = new DiscordTextInputComponent(
+            customId: "aliases",
+            placeholder: "e.g. null nullreference nullref",
+            required: false,
+            style: DiscordTextInputStyle.Short);
 
-        var aliases = new List<string>(aliasesInput.Value?.Split() ?? ArraySegment<string>.Empty);
-        var invalidAliases = new List<string>();
+        var responseInputComponent = new DiscordTextInputComponent(
+            customId: "response",
+            required: true,
+            style: DiscordTextInputStyle.Paragraph);
 
-        if (aliases.Count > 0)
-        {
-            for (int index = aliases.Count - 1; index >= 0; index--)
-            {
-                string current = aliases[index];
-                if (_macroService.TryGetMacro(guild, current, out _))
-                {
-                    aliases.RemoveAt(index);
-                    invalidAliases.Add(current);
-                }
-            }
-        }
+        modal.AddTextInput(aliasInputComponent, "Aliases (space-separated)", "Alternative names for the macro");
+        modal.AddTextInput(responseInputComponent, "Response");
 
-        Macro macro = await _macroService
-            .CreateMacroAsync(guild, null, name, responseInput.Value!, aliases.ToArray());
-        embed.WithColor(DiscordColor.Green);
-        embed.WithTitle("Macro added");
-        embed.WithDescription($"The macro `{macro.Name}` has been added.");
-        if (invalidAliases.Count > 0)
-        {
-            embed.Description += "\n\n⚠️ The following aliases were not added because they already exist: " +
-                                 string.Join(", ", invalidAliases.Select(a => $"`{a}`"));
-        }
-
-        embed.AddField("Type", "Global", true);
-        embed.AddFieldIf(macro.Aliases.Count > 0, "Alias".ToQuantity(macro.Aliases.Count), string.Join(' ', macro.Aliases), true);
-
-        string value = macro.Response;
-        if (value is {Length: > 1024})
-            value = $"{value[..1021]}...";
-        embed.AddField("Response", value);
-
-        await context.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
+        await context.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal, modal);
     }
 }

@@ -1,7 +1,10 @@
+using System.ComponentModel;
 using Cysharp.Text;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
+using DSharpPlus.Commands.Processors.SlashCommands.ArgumentModifiers;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 using JetBrains.Annotations;
 using Marco.AutocompleteProviders;
 using Marco.Data;
@@ -10,7 +13,7 @@ using Marco.Services;
 
 namespace Marco.Commands;
 
-internal sealed class MacroCommand : ApplicationCommandModule
+internal sealed class MacroCommand
 {
     private readonly MacroService _macroService;
     private readonly MacroCooldownService _cooldownService;
@@ -26,14 +29,16 @@ internal sealed class MacroCommand : ApplicationCommandModule
         _cooldownService = cooldownService;
     }
 
-    [SlashCommand("anonmacro", "Executes an macro anonymously, hiding the invocation.", false)]
-    [SlashRequireGuild]
+    [Command("anonmacro")]
+    [Description("Executes an macro anonymously, hiding the invocation.")]
+    [RequireGuild]
     [UsedImplicitly]
-    public async Task AnonymousMacroAsync(InteractionContext context,
-        [Option("macro", "The name of the macro.", true)] [Autocomplete(typeof(MacroAutocompleteProvider))] string macroName,
-        [Option("mention", "The user to mention.")] DiscordUser? mentionUser = null)
+    public async Task AnonymousMacroAsync(SlashCommandContext context,
+        [Parameter("name"), Description("The name of the macro."), SlashAutoCompleteProvider<MacroAutocompleteProvider>]
+        string name,
+        [Parameter("mention"), Description("The user to mention.")] DiscordUser? mentionUser = null)
     {
-        Macro? macro = await VerifyMacroAsync(context, macroName);
+        Macro? macro = await VerifyMacroAsync(context, name);
         if (macro is null)
         {
             return;
@@ -66,18 +71,20 @@ internal sealed class MacroCommand : ApplicationCommandModule
         }
 
         builder.WithContent(response.ToString());
-        await context.CreateResponseAsync("The macro has been sent.", true);
+        await context.RespondAsync("The macro has been sent.", true);
         await context.Channel.SendMessageAsync(builder);
     }
 
-    [SlashCommand("macro", "Executes a macro.")]
-    [SlashRequireGuild]
+    [Command("macro")]
+    [Description("Executes a macro.")]
+    [RequireGuild]
     [UsedImplicitly]
-    public async Task MacroAsync(InteractionContext context,
-        [Option("macro", "The name of the macro.", true)] [Autocomplete(typeof(MacroAutocompleteProvider))] string macroName,
-        [Option("mention", "The user to mention.")] DiscordUser? mentionUser = null)
+    public async Task MacroAsync(SlashCommandContext context,
+        [Parameter("name"), Description("The name of the macro."), SlashAutoCompleteProvider<MacroAutocompleteProvider>]
+        string name,
+        [Parameter("mention"), Description("The user to mention.")] DiscordUser? mentionUser = null)
     {
-        Macro? macro = await VerifyMacroAsync(context, macroName);
+        Macro? macro = await VerifyMacroAsync(context, name);
         if (macro is null)
         {
             return;
@@ -110,15 +117,15 @@ internal sealed class MacroCommand : ApplicationCommandModule
         }
 
         builder.WithContent(response.ToString());
-        await context.CreateResponseAsync(builder);
+        await context.RespondAsync(builder);
         _cooldownService.UpdateCooldown(context.Channel, macro);
     }
 
-    private async Task<Macro?> VerifyMacroAsync(InteractionContext context, string macroName)
+    private async Task<Macro?> VerifyMacroAsync(SlashCommandContext context, string macroName)
     {
-        if (!_macroService.TryGetMacro(context.Guild, macroName, out Macro? macro))
+        if (context.Guild is not { } guild || !_macroService.TryGetMacro(guild, macroName, out Macro? macro))
         {
-            await context.CreateResponseAsync($"The macro `{macroName}` doesn't exist.", true);
+            await context.RespondAsync($"The macro `{macroName}` doesn't exist.", true);
             return null;
         }
 
@@ -126,13 +133,13 @@ internal sealed class MacroCommand : ApplicationCommandModule
 
         if (macro.ChannelId.HasValue && macro.ChannelId.Value != channel.Id)
         {
-            await context.CreateResponseAsync($"The macro `{macroName}` cannot be executed here.", true);
+            await context.RespondAsync($"The macro `{macroName}` cannot be executed here.", true);
             return null;
         }
 
         if (_cooldownService.IsOnCooldown(channel, macro))
         {
-            await context.CreateResponseAsync($"The macro `{macroName}` is on cooldown because it was very recently executed.", true);
+            await context.RespondAsync($"The macro `{macroName}` is on cooldown because it was very recently executed.", true);
             return null;
         }
 

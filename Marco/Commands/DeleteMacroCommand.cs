@@ -1,13 +1,16 @@
+using System.ComponentModel;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
+using DSharpPlus.Commands.Processors.SlashCommands;
+using DSharpPlus.Commands.Processors.SlashCommands.ArgumentModifiers;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 using JetBrains.Annotations;
 using Marco.AutocompleteProviders;
 using Marco.Services;
 
 namespace Marco.Commands;
 
-internal sealed class DeleteMacroCommand : ApplicationCommandModule
+internal sealed class DeleteMacroCommand
 {
     private readonly MacroService _macroService;
 
@@ -20,12 +23,15 @@ internal sealed class DeleteMacroCommand : ApplicationCommandModule
         _macroService = macroService;
     }
 
-    [SlashCommand("deletemacro", "Deletes an existing macro.", false)]
-    [SlashRequireGuild]
+    [Command("deletemacro")]
+    [Description("Deletes an existing macro.")]
+    [RequireGuild]
     [UsedImplicitly]
     public async Task DeleteMacroAsync(
-        InteractionContext context,
-        [Option("name", "The name of the macro."), Autocomplete(typeof(MacroAutocompleteProvider))] string name
+        SlashCommandContext context,
+        [Parameter("name"), Description("The name of the macro.")]
+        [SlashAutoCompleteProvider<MacroAutocompleteProvider>]
+        string name
     )
     {
         var embed = new DiscordEmbedBuilder();
@@ -35,7 +41,7 @@ internal sealed class DeleteMacroCommand : ApplicationCommandModule
             embed.WithColor(DiscordColor.Red);
             embed.WithTitle("Cannot delete macro");
             embed.WithDescription("No name was specified.");
-            await context.CreateResponseAsync(embed, true);
+            await context.RespondAsync(embed, true);
             return;
         }
 
@@ -55,6 +61,6 @@ internal sealed class DeleteMacroCommand : ApplicationCommandModule
             embed.WithDescription(exception.Message);
         }
 
-        await context.CreateResponseAsync(embed);
+        await context.RespondAsync(embed);
     }
 }

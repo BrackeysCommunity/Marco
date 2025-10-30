@@ -39,7 +39,7 @@ internal static class DiscordEmbedBuilderExtensions
             throw new ArgumentNullException(nameof(guild));
         }
 
-        string iconUrl = guild.GetIconUrl(ImageFormat.Png);
+        string iconUrl = guild.GetIconUrl(MediaFormat.Png) ?? guild.IconUrl;
         embedBuilder.WithFooter(guild.Name, iconUrl: iconUrl);
         if (addThumbnail)
         {
@@ -71,7 +71,7 @@ internal static class DiscordEmbedBuilderExtensions
             throw new ArgumentNullException(nameof(builder));
         }
 
-        return builder.AddField(name, value?.ToString(), inline);
+        return builder.AddField(name, value?.ToString()!, inline);
     }
 
     /// <summary>
@@ -99,7 +99,7 @@ internal static class DiscordEmbedBuilderExtensions
 
         if (condition)
         {
-            builder.AddField(name, value?.ToString(), inline);
+            builder.AddField(name, value?.ToString()!, inline);
         }
 
         return builder;
@@ -139,7 +139,7 @@ internal static class DiscordEmbedBuilderExtensions
 
         if (predicate.Invoke())
         {
-            builder.AddField(name, value?.ToString(), inline);
+            builder.AddField(name, value?.ToString()!, inline);
         }
 
         return builder;
@@ -186,7 +186,7 @@ internal static class DiscordEmbedBuilderExtensions
 
         if (predicate.Invoke())
         {
-            builder.AddField(name, valueFactory.Invoke()?.ToString(), inline);
+            builder.AddField(name, valueFactory.Invoke()?.ToString()!, inline);
         }
 
         return builder;
@@ -226,7 +226,108 @@ internal static class DiscordEmbedBuilderExtensions
 
         if (condition)
         {
-            builder.AddField(name, valueFactory.Invoke()?.ToString(), inline);
+            builder.AddField(name, valueFactory.Invoke()?.ToString()!, inline);
+        }
+
+        return builder;
+    }
+
+    /// <summary>
+    ///     Conditionally adds a field to the embed.
+    /// </summary>
+    /// <param name="builder">The <see cref="DiscordEmbedBuilder" /> to modify.</param>
+    /// <param name="predicate">The predicate whose return value is used to determine whether the field will be added.</param>
+    /// <param name="nameFactory">The delegate whose return value will be used as the name of the embed field.</param>
+    /// <param name="valueFactory">The delegate whose return value will be used as the value of the embed field.</param>
+    /// <param name="inline"><see langword="true" /> to display this field inline; otherwise, <see langword="false" />.</param>
+    /// <typeparam name="T">The return type of <paramref name="valueFactory" />.</typeparam>
+    /// <returns>The current instance of <see cref="DiscordEmbedBuilder" />; that is, <paramref name="builder" />.</returns>
+    /// <exception cref="ArgumentNullException">
+    ///     <para><paramref name="builder" /> is <see langword="null" />.</para>
+    ///     -or-
+    ///     <para><paramref name="predicate" /> is <see langword="null" />.</para>
+    ///     -or-
+    ///     <para><paramref name="nameFactory" /> is <see langword="null" />.</para>
+    ///     -or-
+    ///     <para><paramref name="valueFactory" /> is <see langword="null" />.</para>
+    /// </exception>
+    public static DiscordEmbedBuilder AddFieldIf<T>(
+        this DiscordEmbedBuilder builder,
+        Func<bool> predicate,
+        Func<string> nameFactory,
+        Func<T?> valueFactory,
+        bool inline = false)
+    {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        if (predicate is null)
+        {
+            throw new ArgumentNullException(nameof(predicate));
+        }
+
+        if (nameFactory is null)
+        {
+            throw new ArgumentNullException(nameof(nameFactory));
+        }
+
+        if (valueFactory is null)
+        {
+            throw new ArgumentNullException(nameof(valueFactory));
+        }
+
+        if (predicate.Invoke())
+        {
+            builder.AddField(nameFactory.Invoke(), valueFactory.Invoke()?.ToString()!, inline);
+        }
+
+        return builder;
+    }
+
+    /// <summary>
+    ///     Conditionally adds a field to the embed.
+    /// </summary>
+    /// <param name="builder">The <see cref="DiscordEmbedBuilder" /> to modify.</param>
+    /// <param name="condition">The condition whose value is used to determine whether the field will be added.</param>
+    /// <param name="nameFactory">The delegate whose return value will be used as the name of the embed field.</param>
+    /// <param name="valueFactory">The delegate whose return value will be used as the value of the embed field.</param>
+    /// <param name="inline"><see langword="true" /> to display this field inline; otherwise, <see langword="false" />.</param>
+    /// <typeparam name="T">The return type of <paramref name="valueFactory" />.</typeparam>
+    /// <returns>The current instance of <see cref="DiscordEmbedBuilder" />; that is, <paramref name="builder" />.</returns>
+    /// <exception cref="ArgumentNullException">
+    ///     <para><paramref name="builder" /> is <see langword="null" />.</para>
+    ///     -or-
+    ///     <para><paramref name="nameFactory" /> is <see langword="null" />.</para>
+    ///     -or-
+    ///     <para><paramref name="valueFactory" /> is <see langword="null" />.</para>
+    /// </exception>
+    public static DiscordEmbedBuilder AddFieldIf<T>(
+        this DiscordEmbedBuilder builder,
+        bool condition,
+        Func<string> nameFactory,
+        Func<T?> valueFactory,
+        bool inline = false)
+    {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        if (nameFactory is null)
+        {
+            throw new ArgumentNullException(nameof(nameFactory));
+        }
+
+        if (valueFactory is null)
+        {
+            throw new ArgumentNullException(nameof(valueFactory));
+        }
+
+        if (condition)
+        {
+            builder.AddField(nameFactory.Invoke(), valueFactory.Invoke()?.ToString()!, inline);
         }
 
         return builder;
