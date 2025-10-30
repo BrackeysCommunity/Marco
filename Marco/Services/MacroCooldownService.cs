@@ -30,8 +30,8 @@ internal sealed class MacroCooldownService
     /// <exception cref="ArgumentException"><paramref name="channel" /> is not a guild channel.</exception>
     public bool IsOnCooldown(DiscordChannel channel, Macro macro)
     {
-        ArgumentNullException.ThrowIfNull(channel);
-        ArgumentNullException.ThrowIfNull(macro);
+        if (channel is null) throw new ArgumentNullException(nameof(channel));
+        if (macro is null) throw new ArgumentNullException(nameof(macro));
 
         if (channel.Guild is not { } guild) throw new ArgumentException("Channel must be in a guild.", nameof(channel));
         if (!_configurationService.TryGetGuildConfiguration(guild, out GuildConfiguration? guildConfiguration))
@@ -60,8 +60,8 @@ internal sealed class MacroCooldownService
     /// <exception cref="ArgumentException"><paramref name="channel" /> is not a guild channel.</exception>
     public void UpdateCooldown(DiscordChannel channel, Macro macro)
     {
-        ArgumentNullException.ThrowIfNull(channel);
-        ArgumentNullException.ThrowIfNull(macro);
+        if (channel is null) throw new ArgumentNullException(nameof(channel));
+        if (macro is null) throw new ArgumentNullException(nameof(macro));
 
         if (channel.Guild is not { } guild) throw new ArgumentException("Channel must be in a guild.", nameof(channel));
 

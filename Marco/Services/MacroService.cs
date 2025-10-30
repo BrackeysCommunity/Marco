@@ -58,9 +58,9 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
         params string[]? aliases
     )
     {
-        ArgumentNullException.ThrowIfNull(guild);
-        ArgumentNullException.ThrowIfNull(name);
-        ArgumentNullException.ThrowIfNull(response);
+        if (guild is null) throw new ArgumentNullException(nameof(guild));
+        if (name is null) throw new ArgumentNullException(nameof(name));
+        if (response is null) throw new ArgumentNullException(nameof(response));
 
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name cannot be empty or whitespace", nameof(name));
@@ -111,8 +111,8 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
     /// </exception>
     public async Task DeleteMacroAsync(DiscordGuild guild, string name)
     {
-        ArgumentNullException.ThrowIfNull(guild);
-        ArgumentNullException.ThrowIfNull(name);
+        if (guild is null) throw new ArgumentNullException(nameof(guild));
+        if (name is null) throw new ArgumentNullException(nameof(name));
 
         if (!TryGetMacro(guild, name, out Macro? macro))
             return;
@@ -141,9 +141,9 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
     /// </exception>
     public async Task<Macro> EditMacroAsync(DiscordGuild guild, string name, Action<Macro> action)
     {
-        ArgumentNullException.ThrowIfNull(guild);
-        ArgumentNullException.ThrowIfNull(name);
-        ArgumentNullException.ThrowIfNull(action);
+        if (guild is null) throw new ArgumentNullException(nameof(guild));
+        if (name is null) throw new ArgumentNullException(nameof(name));
+        if (action is null) throw new ArgumentNullException(nameof(action));
 
         if (!TryGetMacro(guild, name, out Macro? macro))
             throw new InvalidOperationException("Macro does not exist");
@@ -178,7 +178,7 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
     /// <exception cref="ArgumentNullException"><paramref name="guild" /> is <see langword="null" />.</exception>
     public IReadOnlyCollection<Macro> GetMacros(DiscordGuild guild)
     {
-        ArgumentNullException.ThrowIfNull(guild);
+        if (guild is null) throw new ArgumentNullException(nameof(guild));
         return _macros.TryGetValue(guild, out Dictionary<string, Macro>? macros)
             ? macros.Values.Distinct().ToArray()
             : ArraySegment<Macro>.Empty;
@@ -193,7 +193,7 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
     /// <exception cref="ArgumentException"><paramref name="channel" /> is not a guild channel.</exception>
     public IReadOnlyCollection<Macro> GetMacros(DiscordChannel channel)
     {
-        ArgumentNullException.ThrowIfNull(channel);
+        if (channel is null) throw new ArgumentNullException(nameof(channel));
         if (channel.Guild is not { } guild) throw new ArgumentException("Channel must be in a guild", nameof(channel));
         return _macros.TryGetValue(guild, out Dictionary<string, Macro>? macros)
             ? macros.Values.Where(m => m.ChannelId == channel.Id).Distinct().ToArray()
@@ -216,8 +216,8 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
     /// </exception>
     public bool TryGetChannelMacro(DiscordChannel channel, string name, [NotNullWhen(true)] out Macro? macro)
     {
-        ArgumentNullException.ThrowIfNull(channel);
-        ArgumentNullException.ThrowIfNull(name);
+        if (channel is null) throw new ArgumentNullException(nameof(channel));
+        if (name is null) throw new ArgumentNullException(nameof(name));
 
         if (channel.Guild is not { } guild)
         {
@@ -255,8 +255,8 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
     /// </exception>
     public bool TryGetGlobalMacro(DiscordGuild guild, string name, [NotNullWhen(true)] out Macro? macro)
     {
-        ArgumentNullException.ThrowIfNull(guild);
-        ArgumentNullException.ThrowIfNull(name);
+        if (guild is null) throw new ArgumentNullException(nameof(guild));
+        if (name is null) throw new ArgumentNullException(nameof(name));
 
         if (_macros.TryGetValue(guild, out Dictionary<string, Macro>? macros) && macros.TryGetValue(name, out macro))
         {
@@ -288,8 +288,8 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
     /// </exception>
     public bool TryGetMacro(DiscordGuild guild, string name, [NotNullWhen(true)] out Macro? macro)
     {
-        ArgumentNullException.ThrowIfNull(guild);
-        ArgumentNullException.ThrowIfNull(name);
+        if (guild is null) throw new ArgumentNullException(nameof(guild));
+        if (name is null) throw new ArgumentNullException(nameof(name));
 
         if (_macros.TryGetValue(guild, out Dictionary<string, Macro>? macros) && macros.TryGetValue(name, out macro))
             return true;
@@ -304,7 +304,7 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
     /// <param name="guild">The guild whose macros to retrieve.</param>
     public async Task UpdateFromDatabaseAsync(DiscordGuild guild)
     {
-        ArgumentNullException.ThrowIfNull(guild);
+        if (guild is null) throw new ArgumentNullException(nameof(guild));
 
         if (!_macros.TryGetValue(guild, out Dictionary<string, Macro>? macros))
         {
