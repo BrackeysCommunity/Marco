@@ -1,0 +1,6 @@
+"GUILD_ID":
+  prefix: "[]"
+  reactions:
+    successReaction: ":white_check_mark:"
+    unknownReaction:
+    cooldownReaction: ":hourglass_flowing_sand:"
