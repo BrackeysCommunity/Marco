@@ -6,7 +6,7 @@ internal sealed class Macro : IEquatable<Macro>
     ///     Gets or sets the list of aliases for the macro.
     /// </summary>
     /// <value>The list of aliases.</value>
-    public List<string> Aliases { get; set; } = new();
+    public List<string> Aliases { get; set; } = [];
 
     /// <summary>
     ///     Gets or sets the ID of the channel to which this macro is restricted.

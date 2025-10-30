@@ -94,7 +94,7 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
         var macro = new Macro
         {
             // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
-            Aliases = new List<string>((aliases ?? ArraySegment<string>.Empty).WhereNot(string.IsNullOrWhiteSpace)),
+            Aliases = [..(aliases ?? ArraySegment<string>.Empty).WhereNot(string.IsNullOrWhiteSpace)],
             GuildId = guild.Id,
             ChannelId = channel?.Id,
             Name = Regex.Replace(name.ToLowerInvariant(), "\\s", string.Empty, RegexOptions.Compiled),
@@ -191,7 +191,7 @@ internal sealed class MacroService : BackgroundService, IEventHandler<GuildAvail
             throw new InvalidOperationException("Macro does not exist");
         }
 
-        string[] aliases = macro.Aliases?.WhereNot(string.IsNullOrWhiteSpace).ToArray() ?? Array.Empty<string>();
+        string[] aliases = macro.Aliases?.WhereNot(string.IsNullOrWhiteSpace).ToArray() ?? [];
 
         action(macro);
         macro.Aliases = new List<string>(macro.Aliases?.WhereNot(string.IsNullOrWhiteSpace) ?? ArraySegment<string>.Empty);
